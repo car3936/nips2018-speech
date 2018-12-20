@@ -1,5 +1,5 @@
-import sys
-sys.path.insert(0,"/home/jhpark/tf_projects/")
+#import sys
+#sys.path.insert(0,"/home/jhpark/tf_projects/")
 
 from qrnn_conv_bias_ifo_ctc import Model_CTC_QRNN
 
@@ -29,7 +29,7 @@ model_path = './model/qrnn_conv_bias_ifo_am_k_1_layer_6_1000_mid_conv_15_siall'
 #model_path = './model/sru2_am_5_632_lr3e3'
 train_curve, valid_curve, cer_curve = model.train(dataset, cfg.initial_lr, cfg.max_patience , cfg.max_change, batch_size=batch_size,charset=charset,max_epoch= cfg.max_epoch, path=model_path, regularizer=0.01) 
 
-np.save(model_path + '_train_curve',np.array(train_curve))
-np.save(model_path + '_valid_curve',np.array(valid_curve))
-np.save(model_path + '_cer_curve',np.array(cer_curve))
+#np.save(model_path + '_train_curve',np.array(train_curve))
+#np.save(model_path + '_valid_curve',np.array(valid_curve))
+#np.save(model_path + '_cer_curve',np.array(cer_curve))
 
