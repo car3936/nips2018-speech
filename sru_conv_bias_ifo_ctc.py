@@ -7,9 +7,9 @@ from tensorflow.contrib.layers import xavier_initializer
 from tensorflow.python import debug as tf_debug
 
 from tensorflow.contrib.rnn import LSTMStateTuple
-from qrnn_bias import QRNN_layer
+from sru_layer import SRU_layer
 
-class Model_CTC_QRNN(object):
+class Model_CTC_SRU(object):
 
     def __init__(self, stochastic = False, use_slope = True, variational_dropout = False, vocabulary_size=283, label_size=50,  rnnSize=256, n_layers=3, dropout=0.5, zoneout=0.1, embedding_size=None, dtype=tf.float32, clip = 0.35, k_width=3, name = 'hlstm', conv_filter=3, mid_filter = 25,  batch_size = 128):
         self.rnnSize = rnnSize
@@ -59,30 +59,27 @@ class Model_CTC_QRNN(object):
         # ([0] : batch_size, [1] : seq_len, [2]*[3] : feature dimension)
         h_shape = tf.shape(h)
 
-#        h = tf.reshape(h, [h_shape[0], h_shape[1], 320])
         h = tf.reshape(h, [batch_size, h_shape[1], 1, 320])
-#        h = tf.layers.conv2d(h, 1, (mid_filter,1), (1, 1), 'same', use_bias=False, name = 'QRNN_conv0')
         conv_filter = tf.get_variable('QRNN_conv0_filter', shape = [mid_filter,1, 320, 1], trainable=True)
         h = tf.nn.depthwise_conv2d(h, conv_filter, [1,1,1,1], padding='SAME',  name = 'QRNN_conv0')
         h = tf.squeeze(h, axis = [-2])
-        qrnn_ = QRNN_layer(self.rnnSize, batch_size=self.batch_size, fwidth=self.k_width, pool_type = 'ifo', zoneout=self.zoneout, name='QRNN_layer0', infer = tf.logical_not(self.is_train),skip = True, skip_embedding = True)
-        qrnn_h, last_state = qrnn_(h)
-        qrnn_h = tf.nn.dropout(qrnn_h, dropout_p, noise_shape = [tf.shape(qrnn_h)[0],1,tf.shape(qrnn_h)[2]])
+        sru_ = SRU_layer(self.rnnSize, batch_size=self.batch_size, fwidth=self.k_width, pool_type = 'ifo', zoneout=self.zoneout, name='QRNN_layer0', infer = tf.logical_not(self.is_train),skip = True, skip_embedding = True)
+        sru_h, last_state = sru_(h)
+        sru_h = tf.nn.dropout(sru_h, dropout_p, noise_shape = [tf.shape(sru_h)[0],1,tf.shape(sru_h)[2]])
        
 
         for i in range(1,self.n_layers ):
-            qrnn_h = tf.expand_dims(qrnn_h, -2)
+            sru_h = tf.expand_dims(sru_h, -2)
             conv_filter = tf.get_variable('QRNN_conv{}_filter'.format(i), shape = [mid_filter,1, self.rnnSize, 1], trainable=True)
-            #qrnn_h = tf.layers.conv2d(qrnn_h, 1, (mid_filter,1), (1, 1), 'same', use_bias=False, name = 'QRNN_conv{}'.format(i))
-            qrnn_h = tf.nn.depthwise_conv2d(qrnn_h, conv_filter, [1,1,1,1], padding='SAME',  name = 'QRNN_conv{}'.format(i))
-            qrnn_h = tf.squeeze(qrnn_h, axis = [-2])
-            qrnn_ = QRNN_layer(self.rnnSize, batch_size=self.batch_size, fwidth=self.k_width, pool_type = 'ifo', zoneout=self.zoneout, name='QRNN_layer{}'.format(i), infer = tf.logical_not(self.is_train),skip = True, skip_embedding = False)
-            print(qrnn_h)
-            qrnn_h, last_state = qrnn_(qrnn_h)
-            qrnn_h = tf.nn.dropout(qrnn_h, dropout_p, noise_shape = [tf.shape(qrnn_h)[0],1,tf.shape(qrnn_h)[2]])
+            sru_h = tf.nn.depthwise_conv2d(sru_h, conv_filter, [1,1,1,1], padding='SAME',  name = 'QRNN_conv{}'.format(i))
+            sru_h = tf.squeeze(sru_h, axis = [-2])
+            sru_ = SRU_layer(self.rnnSize, batch_size=self.batch_size, fwidth=self.k_width, pool_type = 'ifo', zoneout=self.zoneout, name='QRNN_layer{}'.format(i), infer = tf.logical_not(self.is_train),skip = True, skip_embedding = False)
+            print(sru_h)
+            sru_h, last_state = sru_(sru_h)
+            sru_h = tf.nn.dropout(sru_h, dropout_p, noise_shape = [tf.shape(sru_h)[0],1,tf.shape(sru_h)[2]])
 
-        h_shape = tf.shape(qrnn_h)
-        output_h = tf.reshape(qrnn_h, [-1, self.rnnSize])
+        h_shape = tf.shape(sru_h)
+        output_h = tf.reshape(sru_h, [-1, self.rnnSize])
         print(output_h)
 
         with tf.variable_scope('dense'): 
@@ -163,9 +160,9 @@ class Model_CTC_QRNN(object):
         for pp in tf.global_variables():
             print(pp.name)
             p_dict[pp.name] = sess.run(pp)
-        #print(p_dict['QRNN_conv0_filter:0'])
+        #print(p_dict['SRU_conv0_filter:0'])
 #        for i in range(6):
-#            p_dict['QRNN_conv{}_filter:0'.format(i)].tofile('QRNN_conv{}_filter.csv'.format(i), sep=',', format='%10.5f' )
+#            p_dict['SRU_conv{}_filter:0'.format(i)].tofile('SRU_conv{}_filter.csv'.format(i), sep=',', format='%10.5f' )
 #        exit()
         #with open('./quant_weights_sru_char_all/float_params.pkl', 'wb') as f:
         #    pickle.dump(p_dict, f)
@@ -245,7 +242,7 @@ class Model_CTC_QRNN(object):
 
         sess.run(tf.global_variables_initializer())
         #print('model restored')
-        #self.saver.restore(sess, './model/qrnn_conv_bias_ifo_am_k_1_layer_6_700_mid_conv_15_si284-154')
+        #self.saver.restore(sess, './model/sru_conv_bias_ifo_am_k_1_layer_6_700_mid_conv_15_si284-154')
         
         cur_lr = lr
         for epoch in range(max_epoch):

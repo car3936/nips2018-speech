@@ -121,10 +121,7 @@ class QRNN_pooling(tf.nn.rnn_cell.RNNCell):
 
 
 
-class QRNN_layer(object):
-    """ Quasi-Recurrent Neural Network Layer
-        (cf. https://arxiv.org/abs/1611.01576)
-    """
+class SRU_layer(object):
     def __init__(self, out_fmaps, fwidth=2, batch_size=64,
                  activation=tf.tanh, pool_type='fo', zoneout=0.1, infer=False,
                  bias_init_val=None, skip = True, skip_embedding = False, n_connection = 1, 
