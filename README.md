@@ -3,7 +3,12 @@
 
 requirement: tensorflow >= 1.6
 
-0. preprocessing 
+0. preprocessing (./wsj_data)
+
+we converted .wv1 files in WSJ corpus to .wav files using sph2pipe. 
+
+Features are extracted and saved as numpy file with preprocessing.py 
+
 
 1. train (character-level model) 
  

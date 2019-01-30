@@ -1,5 +1,5 @@
 
-from sru_ctc import Model_CTC_SRU
+from models.sru_ifo_ctc import Model_CTC_SRU
 
 from wsj_data.dataset_si284 import WSJDataSet
 from config import Config
@@ -22,7 +22,7 @@ n_layers = 6
 
 model = Model_CTC_SRU(label_size = n_label, batch_size = batch_size, rnnSize = cfg.rnnSize, clip = cfg.clip_norm, n_layers=n_layers, k_width=filter_width )
 
-model_path = './model/sru_700x6'
+model_path = './saved_models/sru_700x6'
 train_curve, valid_curve = model.train(dataset, cfg.initial_lr, cfg.max_patience , cfg.max_change, batch_size=batch_size,charset=charset,max_epoch= cfg.max_epoch, path=model_path, regularizer=0.01) 
 
 np.save(model_path + '_train_curve',np.array(train_curve))

@@ -1,5 +1,5 @@
 
-from sru_wordpiece_ctc import Model_CTC_SRU
+from models.sru_wordpiece_ctc import Model_CTC_SRU
 import sentencepiece as spm
 
 from wsj_data.dataset_wordpiece import WSJDataSet
@@ -28,7 +28,7 @@ conv_filter = 5
 
 model = Model_CTC_SRU(label_size = n_label, vocabularySize=sp.GetPieceSize(), batch_size = batch_size, dropout=cfg.dropout, zoneout=0.0, rnnSize = cfg.rnnSize, clip = cfg.clip_norm, n_layers=n_layers, k_width=filter_width, mid_filter=mid_filter, conv_filter = conv_filter )
 
-model_path = './model/sru_wordpiece_700_6_data'
+model_path = './saved_models/sru_wordpiece_700_6_data'
 model.test(dataset, sp,  path=model_path) 
 
 

@@ -1,4 +1,4 @@
-from lstm_ctc import Model_CTC_LSTM
+from models.lstm_ctc import Model_CTC_LSTM
 
 from wsj_data.dataset_si284 import WSJDataSet
 from config import Config
@@ -20,7 +20,7 @@ n_layers = 3
 model = Model_CTC_LSTM(label_size = n_label, rnnSize = cfg.rnnSize, clip = cfg.clip_norm, n_layers=n_layers, stochastic = True )
 
 
-model_path = './model/lstm_am_4x600'
+model_path = './saved_models/lstm_am_4x600'
 train_curve, valid_curve = model.train(dataset, cfg.initial_lr, cfg.max_patience , cfg.max_change, batch_size=batch_size,charset=charset,max_epoch= cfg.max_epoch, path=model_path, regularizer=0.01) 
 
 np.save(model_path + '_train_curve',np.array(train_curve))

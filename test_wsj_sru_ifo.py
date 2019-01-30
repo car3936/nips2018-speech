@@ -1,4 +1,4 @@
-from sru_ctc import Model_CTC_SRU
+from models.sru_ifo_ctc import Model_CTC_SRU
 
 from wsj_data.dataset_si284 import WSJDataSet
 from config import Config
@@ -22,7 +22,7 @@ conv_filter = 5
 
 model = Model_CTC_SRU(label_size = n_label, batch_size = batch_size, rnnSize = cfg.rnnSize, clip = cfg.clip_norm, n_layers=n_layers, k_width=filter_width, conv_filter = conv_filter)
 
-model_path = './model/sru_700x6-125'
+model_path = './saved_models/sru_ifo_700x6'
 model.test(dataset,  path=model_path) 
 
 

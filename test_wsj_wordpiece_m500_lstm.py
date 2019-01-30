@@ -1,4 +1,4 @@
-from lstm_wordpiece_ctc import Model_CTC_LSTM
+from models.lstm_wordpiece_ctc import Model_CTC_LSTM
 import sentencepiece as spm
 
 from wsj_data.dataset_wordpiece import WSJDataSet
@@ -28,7 +28,7 @@ conv_filter = 5
 
 model = Model_CTC_LSTM(label_size = n_label, vocabularySize=sp.GetPieceSize(), batch_size = batch_size, dropout=cfg.dropout, zoneout=0.0, rnnSize = cfg.rnnSize, clip = cfg.clip_norm, n_layers=n_layers, k_width=filter_width, mid_filter=mid_filter, conv_filter = conv_filter )
 
-model_path = './model/lstm_wordpiece_600_4'
+model_path = './saved_models/lstm_wordpiece_600_4'
 model.test(dataset, sp,  path=model_path) 
 
 
